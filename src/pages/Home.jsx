@@ -67,17 +67,17 @@ const Home = ({ content }) => {
       )}
 
       {/* CTA Section */}
-      <section className="py-16 bg-primary-700 text-white">
+      <section className="py-16" style={{ backgroundColor: '#2a7650' }}>
         <div className="container-custom text-center">
-          <h2 className="text-3xl md:text-4xl font-serif mb-6">
+          <h2 className="text-3xl md:text-4xl font-serif mb-6 font-bold" style={{ color: '#ffffff' }}>
             Ready to Begin Your Healing Journey?
           </h2>
-          <p className="text-xl mb-8 text-primary-100 max-w-2xl mx-auto">
+          <p className="text-xl mb-8 max-w-2xl mx-auto font-medium" style={{ color: '#ffffff' }}>
             Schedule a free 15-minute consultation to discuss your needs and see if we're a good fit.
           </p>
           <Link
             to="/contact"
-            className="bg-white text-primary-700 hover:bg-neutral-100 font-medium px-8 py-4 rounded-lg inline-block transition-colors duration-200 shadow-lg hover:shadow-xl"
+            className="bg-white text-primary-800 hover:bg-primary-50 hover:text-primary-900 font-semibold px-8 py-4 rounded-lg inline-block transition-colors duration-200 shadow-lg hover:shadow-xl"
           >
             Get Started Today
           </Link>
