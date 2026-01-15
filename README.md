@@ -347,3 +347,5 @@ This project is private and proprietary.
 ---
 
 **Built with ❤️ using React, Vite, and Tailwind CSS**
+
+*Last updated: January 2026*
