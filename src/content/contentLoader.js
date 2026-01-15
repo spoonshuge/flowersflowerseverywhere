@@ -32,37 +32,65 @@ const parseSheetData = (csvData) => {
 };
 
 /**
- * Fetch data from Google Sheets public CSV endpoint
+ * Extract sheet ID from Google Sheets URL
+ */
+const extractSheetId = (sheetUrl) => {
+  const match = sheetUrl.match(/\/d\/(?:e\/)?([a-zA-Z0-9-_]+)/);
+  return match ? match[1] : null;
+};
+
+/**
+ * Fetch a single tab from Google Sheets by gid
+ */
+const fetchSheetTab = async (sheetId, gid = 0) => {
+  const csvUrl = `https://docs.google.com/spreadsheets/d/e/${sheetId}/pub?gid=${gid}&single=true&output=csv`;
+  console.log(`Fetching tab gid=${gid} from:`, csvUrl);
+  
+  const response = await fetch(csvUrl);
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status} for gid=${gid}`);
+  }
+  
+  const csvData = await response.text();
+  return await parseSheetData(csvData);
+};
+
+/**
+ * Fetch data from multiple Google Sheets tabs
  */
 const fetchGoogleSheet = async (sheetUrl) => {
   try {
-    // If URL already has output=csv or is already in export format, use as-is
-    let csvUrl = sheetUrl;
-    
-    // Only convert if it's a docs.google.com URL and NOT already in CSV format
-    if (sheetUrl.includes('docs.google.com/spreadsheets') && 
-        !sheetUrl.includes('output=csv') && 
-        !sheetUrl.includes('pub?') &&
-        !sheetUrl.includes('export?format=csv')) {
-      // Extract sheet ID (handle both /d/ID and /d/e/ID patterns)
-      const match = sheetUrl.match(/\/d\/(?:e\/)?([a-zA-Z0-9-_]+)/);
-      if (match) {
-        const sheetId = match[1];
-        // Get gid if specified (for specific tabs)
-        const gidMatch = sheetUrl.match(/[#&]gid=([0-9]+)/);
-        const gid = gidMatch ? gidMatch[1] : '0';
-        csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
+    const sheetId = extractSheetId(sheetUrl);
+    if (!sheetId) {
+      throw new Error('Could not extract sheet ID from URL');
+    }
+
+    // Define tab structure with gid numbers
+    // User needs to ensure tabs are in this order in their sheet
+    const tabs = [
+      { name: 'site_meta', gid: 0 },
+      { name: 'home_page', gid: 1 },
+      { name: 'about_page', gid: 2 },
+      { name: 'approach_page', gid: 3 },
+      { name: 'services', gid: 4 },
+      { name: 'faqs', gid: 5 },
+      { name: 'contact', gid: 6 }
+    ];
+
+    // Fetch all tabs
+    const results = {};
+    for (const tab of tabs) {
+      try {
+        const data = await fetchSheetTab(sheetId, tab.gid);
+        results[tab.name] = data;
+        console.log(`✓ Loaded ${tab.name} (${data.length} rows)`);
+      } catch (error) {
+        console.warn(`Could not load ${tab.name}:`, error.message);
+        results[tab.name] = [];
       }
     }
 
-    console.log('Fetching from URL:', csvUrl);
-    const response = await fetch(csvUrl);
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    const csvData = await response.text();
-    return await parseSheetData(csvData);
+    return results;
   } catch (error) {
     console.error('Error fetching Google Sheet:', error);
     throw error;
@@ -70,9 +98,9 @@ const fetchGoogleSheet = async (sheetUrl) => {
 };
 
 /**
- * Transform raw sheet data into structured content object
+ * Transform tab-based sheet data into structured content object
  */
-const transformSheetData = (rawData) => {
+const transformSheetData = (tabData) => {
   const content = {
     site_meta: {},
     home: {},
@@ -83,30 +111,79 @@ const transformSheetData = (rawData) => {
     contact: {},
   };
 
-  // Process each row based on structure
-  rawData.forEach(row => {
-    const { page, section, field, value, key } = row;
-    
-    // Handle site_meta (key-value pairs)
-    if (key && value) {
-      content.site_meta[sanitizeContent(key)] = sanitizeContent(value);
-    }
-    
-    // Handle page content
-    if (page && section && field && value) {
-      const sanitizedValue = sanitizeContent(value);
-      
-      if (!content[page]) {
-        content[page] = {};
+  // Process site_meta (key-value pairs)
+  if (tabData.site_meta) {
+    tabData.site_meta.forEach(row => {
+      if (row.key && row.value) {
+        content.site_meta[sanitizeContent(row.key)] = sanitizeContent(row.value);
       }
-      
-      if (!content[page][section]) {
-        content[page][section] = {};
+    });
+  }
+
+  // Helper to process page tabs (section/field/value structure)
+  const processPageTab = (data, pageName) => {
+    if (!data) return {};
+    const page = {};
+    
+    data.forEach(row => {
+      if (row.section && row.field && row.value) {
+        if (!page[row.section]) {
+          page[row.section] = {};
+        }
+        page[row.section][row.field] = sanitizeContent(row.value);
       }
-      
-      content[page][section][field] = sanitizedValue;
-    }
-  });
+    });
+    
+    return page;
+  };
+
+  // Process home page
+  content.home = processPageTab(tabData.home_page, 'home');
+
+  // Process about page
+  content.about = processPageTab(tabData.about_page, 'about');
+
+  // Process approach page
+  content.approach = processPageTab(tabData.approach_page, 'approach');
+
+  // Process services (array of objects)
+  if (tabData.services) {
+    content.services = tabData.services
+      .filter(row => row.id && row.title)
+      .map(row => ({
+        id: sanitizeContent(row.id),
+        title: sanitizeContent(row.title),
+        emoji: row.emoji || '',
+        description: sanitizeContent(row.description || ''),
+        details: sanitizeContent(row.details || ''),
+        rate: sanitizeContent(row.rate || ''),
+        image: sanitizeContent(row.image || ''),
+        imageAlt: sanitizeContent(row.imageAlt || ''),
+        order: parseInt(row.order) || 0
+      }))
+      .sort((a, b) => a.order - b.order);
+  }
+
+  // Process FAQs (array of objects)
+  if (tabData.faqs) {
+    content.faqs = tabData.faqs
+      .filter(row => row.question && row.answer)
+      .map(row => ({
+        question: sanitizeContent(row.question),
+        answer: sanitizeContent(row.answer),
+        order: parseInt(row.order) || 0
+      }))
+      .sort((a, b) => a.order - b.order);
+  }
+
+  // Process contact (field-value pairs)
+  if (tabData.contact) {
+    tabData.contact.forEach(row => {
+      if (row.field && row.value) {
+        content.contact[sanitizeContent(row.field)] = sanitizeContent(row.value);
+      }
+    });
+  }
 
   return content;
 };
