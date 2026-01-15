@@ -55,8 +55,11 @@ const fetchGoogleSheet = async (sheetUrl) => {
     
     // Parse sections from single-tab format
     // Structure: section header row, then column headers, then data rows
-    const sections = {};
-    let currentSection = null;
+    // Special case: First section (site_meta) doesn't have a header - starts with data
+    const sections = {
+      site_meta: [] // Initialize site_meta for rows before any section header
+    };
+    let currentSection = 'site_meta'; // Start with site_meta
     let currentColumns = [];
     
     for (let i = 0; i < allRows.length; i++) {
@@ -69,6 +72,7 @@ const fetchGoogleSheet = async (sheetUrl) => {
       if (hasOnlyFirstCol && firstCol.trim()) {
         currentSection = firstCol.trim();
         sections[currentSection] = [];
+        console.log(`Found section header: "${currentSection}" at row ${i}`);
         // Next row should be column headers
         if (i + 1 < allRows.length) {
           currentColumns = Object.keys(allRows[i + 1]).filter(key => allRows[i + 1][key]);
@@ -77,7 +81,7 @@ const fetchGoogleSheet = async (sheetUrl) => {
         continue;
       }
       
-      // If we're in a section and this row has data, add it
+      // If we have a current section and this row has data, add it
       if (currentSection && firstCol) {
         sections[currentSection].push(row);
       }
@@ -110,77 +114,186 @@ const transformSheetData = (tabData) => {
   };
 
   // Process site_meta (key-value pairs)
+  // Note: First CSV column becomes 'site_meta' (the key), second becomes '' (the value)
   if (tabData.site_meta) {
     tabData.site_meta.forEach(row => {
-      if (row.key && row.value) {
-        content.site_meta[sanitizeContent(row.key)] = sanitizeContent(row.value);
+      const key = row['site_meta'] || row.site_meta;
+      const value = row[''] || row.value;
+      if (key && value) {
+        content.site_meta[sanitizeContent(key)] = sanitizeContent(value);
       }
     });
+    console.log('✓ Processed site_meta:', Object.keys(content.site_meta).length, 'items');
   }
+
+  // Helper to transform nested page structure to match component expectations
+  // Handles: simple fields, numbered fields that become arrays
+  const flattenPageData = (nestedData) => {
+    const flattened = {};
+    const numberedFields = {}; // Track fields with _1, _2, etc.
+    
+    // First pass: collect all fields
+    Object.keys(nestedData).forEach(section => {
+      Object.keys(nestedData[section]).forEach(field => {
+        const value = nestedData[section][field];
+        
+        // Check if field has a number suffix (e.g., title_1, item_2)
+        const match = field.match(/^(.+)_(\d+)$/);
+        if (match) {
+          const baseField = match[1]; // e.g., "title", "item"
+          const index = parseInt(match[2]) - 1; // Convert to 0-based index
+          
+          if (!numberedFields[section]) {
+            numberedFields[section] = {};
+          }
+          if (!numberedFields[section][baseField]) {
+            numberedFields[section][baseField] = [];
+          }
+          numberedFields[section][baseField][index] = value;
+        } else {
+          // Simple field - add directly
+          flattened[field] = value;
+        }
+      });
+    });
+    
+    // Second pass: convert numbered fields to arrays or objects
+    Object.keys(numberedFields).forEach(section => {
+      const sectionName = section.toLowerCase();
+      
+      // Handle promises (title_1/content_1 pairs)
+      if (numberedFields[section].title && numberedFields[section].content) {
+        flattened['promises'] = [];
+        for (let i = 0; i < Math.max(numberedFields[section].title.length, numberedFields[section].content.length); i++) {
+          if (numberedFields[section].title[i] || numberedFields[section].content[i]) {
+            flattened['promises'].push({
+              title: numberedFields[section].title[i] || '',
+              content: numberedFields[section].content[i] || ''
+            });
+          }
+        }
+      }
+      
+      // Handle credentials/focus items (item_1, item_2, etc.)
+      if (numberedFields[section].item) {
+        const arrayName = section.toLowerCase() === 'credentials' ? 'credentials' : 
+                         section.toLowerCase() === 'focus' ? 'areasOfFocus' : 
+                         section + 'Items';
+        flattened[arrayName] = numberedFields[section].item.filter(Boolean);
+      }
+      
+      // Handle modalities (name_1/description_1 pairs)
+      if (numberedFields[section].name && numberedFields[section].description) {
+        flattened['modalities'] = [];
+        for (let i = 0; i < Math.max(numberedFields[section].name.length, numberedFields[section].description.length); i++) {
+          if (numberedFields[section].name[i] || numberedFields[section].description[i]) {
+            flattened['modalities'].push({
+              name: numberedFields[section].name[i] || '',
+              description: numberedFields[section].description[i] || ''
+            });
+          }
+        }
+      }
+      
+      // Handle images (path_1/alt_1/caption_1)
+      if (numberedFields[section].path) {
+        flattened['images'] = [];
+        for (let i = 0; i < numberedFields[section].path.length; i++) {
+          if (numberedFields[section].path[i]) {
+            flattened['images'].push({
+              path: numberedFields[section].path[i],
+              alt: (numberedFields[section].alt && numberedFields[section].alt[i]) || '',
+              caption: (numberedFields[section].caption && numberedFields[section].caption[i]) || ''
+            });
+          }
+        }
+      }
+    });
+    
+    return flattened;
+  };
 
   // Helper to process page tabs (section/field/value structure)
   const processPageTab = (data, pageName) => {
-    if (!data) return {};
+    if (!data || data.length === 0) return {};
+    
     const page = {};
     
     data.forEach(row => {
-      if (row.section && row.field && row.value) {
-        if (!page[row.section]) {
-          page[row.section] = {};
+      // Column mapping: 'site_meta' = section, '' = field, '_1' = value
+      const section = row['site_meta'];
+      const field = row[''];
+      const value = row['_1'];
+      
+      if (section && field && value) {
+        if (!page[section]) {
+          page[section] = {};
         }
-        page[row.section][row.field] = sanitizeContent(row.value);
+        page[section][field] = sanitizeContent(value);
       }
     });
     
+    console.log(`✓ Processed ${pageName}:`, Object.keys(page).length, 'sections');
     return page;
   };
 
   // Process home page
-  content.home = processPageTab(tabData.home_page, 'home');
+  const homeRaw = processPageTab(tabData.home_page, 'home');
+  content.home = flattenPageData(homeRaw);
 
   // Process about page
-  content.about = processPageTab(tabData.about_page, 'about');
+  const aboutRaw = processPageTab(tabData.about_page, 'about');
+  content.about = flattenPageData(aboutRaw);
 
   // Process approach page
-  content.approach = processPageTab(tabData.approach_page, 'approach');
+  const approachRaw = processPageTab(tabData.approach_page, 'approach');
+  content.approach = flattenPageData(approachRaw);
 
   // Process services (array of objects)
+  // Column mapping: 'site_meta' = id, '' = title, '_1' = emoji, '_2' = description, etc.
   if (tabData.services) {
     content.services = tabData.services
-      .filter(row => row.id && row.title)
+      .filter(row => row['site_meta'] && row[''])
       .map(row => ({
-        id: sanitizeContent(row.id),
-        title: sanitizeContent(row.title),
-        emoji: row.emoji || '',
-        description: sanitizeContent(row.description || ''),
-        details: sanitizeContent(row.details || ''),
-        rate: sanitizeContent(row.rate || ''),
-        image: sanitizeContent(row.image || ''),
-        imageAlt: sanitizeContent(row.imageAlt || ''),
-        order: parseInt(row.order) || 0
+        id: sanitizeContent(row['site_meta']),
+        title: sanitizeContent(row['']),
+        emoji: row['_1'] || '',
+        description: sanitizeContent(row['_2'] || ''),
+        details: sanitizeContent(row['_3'] || ''),
+        rate: sanitizeContent(row['_4'] || ''),
+        image: sanitizeContent(row['_5'] || ''),
+        imageAlt: sanitizeContent(row['_6'] || ''),
+        order: parseInt(row['_7']) || 0
       }))
       .sort((a, b) => a.order - b.order);
+    console.log('✓ Processed services:', content.services.length, 'items');
   }
 
   // Process FAQs (array of objects)
+  // Column mapping: 'site_meta' = question, '' = answer, '_1' = order
   if (tabData.faqs) {
     content.faqs = tabData.faqs
-      .filter(row => row.question && row.answer)
+      .filter(row => row['site_meta'] && row[''])
       .map(row => ({
-        question: sanitizeContent(row.question),
-        answer: sanitizeContent(row.answer),
-        order: parseInt(row.order) || 0
+        question: sanitizeContent(row['site_meta']),
+        answer: sanitizeContent(row['']),
+        order: parseInt(row['_1']) || 0
       }))
       .sort((a, b) => a.order - b.order);
+    console.log('✓ Processed faqs:', content.faqs.length, 'items');
   }
 
   // Process contact (field-value pairs)
+  // Column mapping: 'site_meta' = field, '' = value
   if (tabData.contact) {
     tabData.contact.forEach(row => {
-      if (row.field && row.value) {
-        content.contact[sanitizeContent(row.field)] = sanitizeContent(row.value);
+      const field = row['site_meta'];
+      const value = row[''];
+      if (field && value) {
+        content.contact[sanitizeContent(field)] = sanitizeContent(value);
       }
     });
+    console.log('✓ Processed contact:', Object.keys(content.contact).length, 'fields');
   }
 
   return content;
