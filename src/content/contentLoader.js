@@ -37,13 +37,21 @@ const parseSheetData = (csvData) => {
 const fetchGoogleSheet = async (sheetUrl) => {
   try {
     console.log('Fetching from URL:', sheetUrl);
-    const response = await fetch(sheetUrl);
+    const response = await fetch(sheetUrl, {
+      redirect: 'follow', // Explicitly follow redirects
+      mode: 'cors',
+      cache: 'no-cache'
+    });
+    
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     
     const csvData = await response.text();
+    console.log('CSV data received, length:', csvData.length);
+    
     const allRows = await parseSheetData(csvData);
+    console.log('Total rows parsed:', allRows.length);
     
     // Parse sections from single-tab format
     // Structure: section header row, then column headers, then data rows
