@@ -36,12 +36,16 @@ const parseSheetData = (csvData) => {
  */
 const fetchGoogleSheet = async (sheetUrl) => {
   try {
-    // Convert Google Sheets URL to CSV export format if needed
+    // If URL already has output=csv or is already in export format, use as-is
     let csvUrl = sheetUrl;
     
-    if (sheetUrl.includes('docs.google.com/spreadsheets')) {
-      // Extract sheet ID
-      const match = sheetUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
+    // Only convert if it's a docs.google.com URL and NOT already in CSV format
+    if (sheetUrl.includes('docs.google.com/spreadsheets') && 
+        !sheetUrl.includes('output=csv') && 
+        !sheetUrl.includes('pub?') &&
+        !sheetUrl.includes('export?format=csv')) {
+      // Extract sheet ID (handle both /d/ID and /d/e/ID patterns)
+      const match = sheetUrl.match(/\/d\/(?:e\/)?([a-zA-Z0-9-_]+)/);
       if (match) {
         const sheetId = match[1];
         // Get gid if specified (for specific tabs)
@@ -51,6 +55,7 @@ const fetchGoogleSheet = async (sheetUrl) => {
       }
     }
 
+    console.log('Fetching from URL:', csvUrl);
     const response = await fetch(csvUrl);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
