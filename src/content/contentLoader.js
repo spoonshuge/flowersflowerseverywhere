@@ -32,65 +32,55 @@ const parseSheetData = (csvData) => {
 };
 
 /**
- * Extract sheet ID from Google Sheets URL
- */
-const extractSheetId = (sheetUrl) => {
-  const match = sheetUrl.match(/\/d\/(?:e\/)?([a-zA-Z0-9-_]+)/);
-  return match ? match[1] : null;
-};
-
-/**
- * Fetch a single tab from Google Sheets by gid
- */
-const fetchSheetTab = async (sheetId, gid = 0) => {
-  const csvUrl = `https://docs.google.com/spreadsheets/d/e/${sheetId}/pub?gid=${gid}&single=true&output=csv`;
-  console.log(`Fetching tab gid=${gid} from:`, csvUrl);
-  
-  const response = await fetch(csvUrl);
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status} for gid=${gid}`);
-  }
-  
-  const csvData = await response.text();
-  return await parseSheetData(csvData);
-};
-
-/**
- * Fetch data from multiple Google Sheets tabs
+ * Fetch data from Google Sheets and parse sections
  */
 const fetchGoogleSheet = async (sheetUrl) => {
   try {
-    const sheetId = extractSheetId(sheetUrl);
-    if (!sheetId) {
-      throw new Error('Could not extract sheet ID from URL');
+    console.log('Fetching from URL:', sheetUrl);
+    const response = await fetch(sheetUrl);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
-
-    // Define tab structure with gid numbers
-    // User needs to ensure tabs are in this order in their sheet
-    const tabs = [
-      { name: 'site_meta', gid: 0 },
-      { name: 'home_page', gid: 1 },
-      { name: 'about_page', gid: 2 },
-      { name: 'approach_page', gid: 3 },
-      { name: 'services', gid: 4 },
-      { name: 'faqs', gid: 5 },
-      { name: 'contact', gid: 6 }
-    ];
-
-    // Fetch all tabs
-    const results = {};
-    for (const tab of tabs) {
-      try {
-        const data = await fetchSheetTab(sheetId, tab.gid);
-        results[tab.name] = data;
-        console.log(`✓ Loaded ${tab.name} (${data.length} rows)`);
-      } catch (error) {
-        console.warn(`Could not load ${tab.name}:`, error.message);
-        results[tab.name] = [];
+    
+    const csvData = await response.text();
+    const allRows = await parseSheetData(csvData);
+    
+    // Parse sections from single-tab format
+    // Structure: section header row, then column headers, then data rows
+    const sections = {};
+    let currentSection = null;
+    let currentColumns = [];
+    
+    for (let i = 0; i < allRows.length; i++) {
+      const row = allRows[i];
+      const firstCol = Object.values(row)[0];
+      const otherCols = Object.values(row).slice(1);
+      const hasOnlyFirstCol = firstCol && otherCols.every(v => !v || v.trim() === '');
+      
+      // Check if this is a section header (only first column has value)
+      if (hasOnlyFirstCol && firstCol.trim()) {
+        currentSection = firstCol.trim();
+        sections[currentSection] = [];
+        // Next row should be column headers
+        if (i + 1 < allRows.length) {
+          currentColumns = Object.keys(allRows[i + 1]).filter(key => allRows[i + 1][key]);
+          i++; // Skip the header row
+        }
+        continue;
+      }
+      
+      // If we're in a section and this row has data, add it
+      if (currentSection && firstCol) {
+        sections[currentSection].push(row);
       }
     }
-
-    return results;
+    
+    console.log('Parsed sections:', Object.keys(sections));
+    Object.keys(sections).forEach(section => {
+      console.log(`✓ Loaded ${section} (${sections[section].length} rows)`);
+    });
+    
+    return sections;
   } catch (error) {
     console.error('Error fetching Google Sheet:', error);
     throw error;
