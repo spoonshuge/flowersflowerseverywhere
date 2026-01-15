@@ -1,0 +1,246 @@
+{
+  "site_meta": {
+    "siteTitle": "Professional Counseling Services",
+    "tagline": "Experiential Therapy for Healing & Growth",
+    "phone": "(555) 123-4567",
+    "email": "contact@example.com",
+    "address": "6065 Lake Forrest Drive NW, Suite 250, Sandy Springs, GA 30328",
+    "ctaLabel": "Schedule Consultation",
+    "primaryColor": "#2a7650"
+  },
+  "home": {
+    "hero": {
+      "headline": "Find Balance. Discover Healing. Move Forward.",
+      "subheadline": "Experiential therapy helping individuals, couples, and families in Sandy Springs, GA",
+      "ctaText": "Request a Free Consultation",
+      "image": "images/main/room0.png",
+      "imageAlt": "A quiet therapy office interior with soft natural light"
+    },
+    "intro": {
+      "title": "Welcome",
+      "content": "I am an experiential therapist and collaborative, relationally-oriented counselor who seeks to support individuals within their current context. Rather than providing traditional talk therapy, I integrate practices of mindfulness and experiential approaches to help you work through challenges and discover paths to healing."
+    },
+    "offerings": [
+      {
+        "title": "Individual Therapy",
+        "description": "60-120 minute sessions for consistent, personalized support",
+        "icon": "individual"
+      },
+      {
+        "title": "Intensives",
+        "description": "1-4 day concentrated healing work for deeper transformation",
+        "icon": "intensive"
+      },
+      {
+        "title": "Therapy Groups",
+        "description": "Experiential group sessions fostering connection and growth",
+        "icon": "group"
+      }
+    ]
+  },
+  "about": {
+    "title": "About Me",
+    "subtitle": "Who Am I",
+    "intro": "I am an experiential therapist and collaborative, relationally-oriented counselor who seeks to support individuals within their current context.",
+    "promises": [
+      {
+        "title": "First Promise",
+        "content": "Because I am a firm believer that you can only take someone as far as you yourself have gone, I will not ask anything of you that I don't ask of myself. Therefore, every technique used in session or trainings is one that I have not only been trained in but also experienced personally."
+      },
+      {
+        "title": "Second Promise",
+        "content": "I will not suggest anything that I do not believe will be to your benefit. With that said, I let all my clients know that you always have veto power and all suggestions are invitations."
+      }
+    ],
+    "journey": "Prior to becoming a Nationally Certified Counselor, I obtained my psychology degree from Hendrix College before moving to Atlanta to attend Emory University's Candler School of Theology and earn my Master of Divinity. I then returned to school to earn my Master's Degree in Clinical Mental Health Counseling at Mercer University.",
+    "credentials": [
+      "Nationally Certified Counselor",
+      "Master of Divinity - Emory University",
+      "Master's Degree in Clinical Mental Health Counseling - Mercer University",
+      "Psychology Degree - Hendrix College"
+    ],
+    "areasOfFocus": [
+      "Children, Adolescents, and Adults",
+      "Women's Issues and Relational Concerns",
+      "Grief & Loss",
+      "Trauma",
+      "Creative Counseling Therapy",
+      "Groups",
+      "Substance Abuse and Recovery",
+      "Parenting",
+      "Depression and Anxiety",
+      "Life Transitions",
+      "Mindfulness",
+      "Spirituality"
+    ],
+    "image": "images/about/simpsonHeadshot.avif",
+    "imageAlt": "Professional headshot"
+  },
+  "approach": {
+    "title": "My Approach",
+    "subtitle": "Experiential & Integrative Therapy",
+    "description": "I use experiential modalities to integrate humanistic, existential, and systems theories with cognitive, behavioral, and solution-focused techniques. I seek to work with clients to identify strengths, better utilize available resources, and work through challenges that pose obstacles to fulfilling life and relationships.",
+    "modalities": [
+      {
+        "name": "Psychodrama",
+        "description": "Action-based therapy exploring emotions and experiences"
+      },
+      {
+        "name": "Art Therapy",
+        "description": "Creative expression as a path to healing"
+      },
+      {
+        "name": "Music Therapy",
+        "description": "Using sound and rhythm for emotional processing"
+      },
+      {
+        "name": "Improvisation",
+        "description": "Spontaneous exploration of new perspectives"
+      },
+      {
+        "name": "Sand Tray Therapy",
+        "description": "Tactile and symbolic representation of inner worlds"
+      },
+      {
+        "name": "Brainspotting",
+        "description": "Body-based trauma processing technique"
+      },
+      {
+        "name": "Play Therapy",
+        "description": "Using play to facilitate healing and growth"
+      }
+    ],
+    "images": [
+      {
+        "path": "images/approach/img0.png",
+        "alt": "Art therapy materials arranged on a simple table",
+        "caption": ""
+      },
+      {
+        "path": "images/approach/img1.png",
+        "alt": "Sand tray therapy setup",
+        "caption": ""
+      }
+    ]
+  },
+  "services": [
+    {
+      "id": "individual",
+      "title": "Individual Therapy",
+      "emoji": "🧘",
+      "description": "Individual therapy is best for those who are able and willing to make an ongoing regular commitment to healing work.",
+      "details": [
+        "60-minute sessions",
+        "90-minute sessions",
+        "120-minute sessions"
+      ],
+      "frequency": "Weekly or biweekly basis",
+      "rate": "$150 per 60-minute session",
+      "availability": "Available in person and virtually",
+      "images": [
+        {
+          "path": "images/services/individual0.png",
+          "alt": "Quiet therapy room with two chairs positioned for conversation"
+        }
+      ]
+    },
+    {
+      "id": "intensives",
+      "title": "Individual, Couples, & Family Intensives",
+      "emoji": "💫",
+      "description": "Intensives are ideal for individuals, couples, and families seeking deep, concentrated healing work beyond what weekly therapy sessions can offer.",
+      "details": [
+        "Duration: 1-4 days",
+        "Daily commitment: 6-8 hours of healing work",
+        "Time for deep exploration and processing",
+        "Evenings for rest and integration"
+      ],
+      "rates": [
+        "Single-day intensive: $1,500 per day",
+        "Two-day intensive: $1,400 per day",
+        "Three or more day intensive: $1,200 per day"
+      ],
+      "images": [
+        {
+          "path": "images/services/intensive0.png",
+          "alt": "Minimal retreat-like interior space designed for reflection"
+        }
+      ]
+    },
+    {
+      "id": "groups",
+      "title": "Therapy Groups",
+      "emoji": "👥",
+      "description": "Groups are just as therapeutic as individual sessions and provide the added opportunity for connection with peers. Like individual sessions, therapy groups are experiential in nature.",
+      "note": "If you are interested in being added to a group waiting list, please contact me.",
+      "images": [
+        {
+          "path": "images/services/group0.png",
+          "alt": "Circle of empty chairs in a calm meeting room"
+        }
+      ]
+    },
+    {
+      "id": "consultation",
+      "title": "Experiential Consultation",
+      "emoji": "🎯",
+      "description": "To help those who are new to experiential modalities, I provide 60-minute consultation sessions to explore what experiential tools can be easily incorporated into work with clients and teams.",
+      "rate": "$150 per hour"
+    },
+    {
+      "id": "training",
+      "title": "Training",
+      "emoji": "📚",
+      "description": "Professional training opportunities available for mental health professionals seeking to enhance their experiential therapy skills.",
+      "rate": "$1,500 per day"
+    },
+    {
+      "id": "retreats",
+      "title": "Group Retreats and Workshops",
+      "emoji": "🌲",
+      "description": "Specialized retreats and workshops designed for groups seeking therapeutic support, connection, and learning in a retreat setting.",
+      "note": "Available upon request. Cost varies based on group."
+    }
+  ],
+  "faqs": [
+    {
+      "question": "What services do you offer?",
+      "answer": "I offer Individual Therapy (in person and virtual, 60-120 minutes), Individual/Couples/Family Intensives (1-4 days with 6-8 hours daily), Therapy Groups, Experiential Consultation, Professional Training, and Group Retreats and Workshops."
+    },
+    {
+      "question": "What are your fees?",
+      "answer": "Individual Therapy is $150 per 60-minute session. Intensives range from $1,200-$1,500 per day depending on length. Consultation is $150/hour. Training is $1,500/day. Group costs vary."
+    },
+    {
+      "question": "Do you take insurance?",
+      "answer": "I am a private-pay practice and do not currently accept insurance. However, I can provide a 'super bill' for potential out-of-network reimbursement through your insurance company."
+    },
+    {
+      "question": "What forms of payment do you accept?",
+      "answer": "I use Simple Practice where you can set up billing through a client portal. Accepted payment methods include: Credit/Debit Card, Cash, Check, Venmo, and PayPal."
+    },
+    {
+      "question": "Do you work with couples or families?",
+      "answer": "I work with couples in intensive settings (2-4 day intensives). I offer family sessions in 90-120 minute blocks."
+    },
+    {
+      "question": "Where are you located?",
+      "answer": "My physical office is at 6065 Lake Forrest Drive NW, Suite 250, Sandy Springs, GA 30328. Note: The building requires stairs to access the second floor. For those with mobility issues, virtual sessions and home visits are available."
+    },
+    {
+      "question": "What is the next step if I have more questions?",
+      "answer": "You can schedule a free 15-minute consultation to discuss your needs and see if we're a good fit."
+    }
+  ],
+  "contact": {
+    "title": "Get Started",
+    "subtitle": "Schedule Your Free 15-Minute Consultation",
+    "description": "Unsure if therapy is right for you? Schedule a free consultation to discuss your needs and learn how I can support your healing journey.",
+    "phone": "(555) 123-4567",
+    "email": "contact@example.com",
+    "address": "6065 Lake Forrest Drive NW, Suite 250, Sandy Springs, GA 30328",
+    "accessibilityNote": "The building requires stairs to access my office on the second floor. For those with mobility issues, virtual sessions and home visits are available.",
+    "image": "images/contactFAQ/contact0.png",
+    "imageAlt": "Exterior of a quiet professional office building"
+  }
+}
