@@ -131,6 +131,7 @@ const transformSheetData = (tabData) => {
   const flattenPageData = (nestedData) => {
     const flattened = {};
     const numberedFields = {}; // Track fields with _1, _2, etc.
+    const sectionFields = {}; // Track non-numbered fields by section
     
     // First pass: collect all fields
     Object.keys(nestedData).forEach(section => {
@@ -151,10 +152,43 @@ const transformSheetData = (tabData) => {
           }
           numberedFields[section][baseField][index] = value;
         } else {
-          // Simple field - add directly
-          flattened[field] = value;
+          // Simple field - store in section fields
+          if (!sectionFields[section]) {
+            sectionFields[section] = {};
+          }
+          sectionFields[section][field] = value;
         }
       });
+    });
+    
+    // Process non-numbered fields
+    Object.keys(sectionFields).forEach(section => {
+      const fields = sectionFields[section];
+      const fieldKeys = Object.keys(fields);
+      
+      // Special handling for "image" section - map to parent level
+      if (section === 'image' && fields.path) {
+        flattened['image'] = fields.path;
+        if (fields.alt) {
+          flattened['imageAlt'] = fields.alt;
+        }
+        return; // Skip normal processing
+      }
+      
+      // Special handling for single-field sections
+      if (fieldKeys.length === 1) {
+        const singleField = fieldKeys[0];
+        // If section has only "content", flatten it to section level
+        if (singleField === 'content') {
+          flattened[section] = fields[singleField];
+        } else {
+          // Otherwise keep as nested object
+          flattened[section] = fields;
+        }
+      } else if (fieldKeys.length > 1) {
+        // Multiple fields - keep as nested object
+        flattened[section] = fields;
+      }
     });
     
     // Second pass: convert numbered fields to arrays or objects
@@ -207,6 +241,26 @@ const transformSheetData = (tabData) => {
             });
           }
         }
+      }
+      
+      // Handle offerings (title_1/description_1 pairs for home page)
+      if (numberedFields[section].title && numberedFields[section].description && section.toLowerCase() === 'offerings') {
+        flattened['offerings'] = [];
+        for (let i = 0; i < Math.max(numberedFields[section].title.length, numberedFields[section].description.length); i++) {
+          if (numberedFields[section].title[i] || numberedFields[section].description[i]) {
+            flattened['offerings'].push({
+              title: numberedFields[section].title[i] || '',
+              description: numberedFields[section].description[i] || ''
+            });
+          }
+        }
+      }
+    });
+    
+    // Clean up empty section objects
+    Object.keys(flattened).forEach(key => {
+      if (typeof flattened[key] === 'object' && !Array.isArray(flattened[key]) && Object.keys(flattened[key]).length === 0) {
+        delete flattened[key];
       }
     });
     
