@@ -73,13 +73,13 @@ const Approach = ({ content }) => {
       )}
 
       {/* Philosophy Section */}
-      <section className="py-16 bg-primary-700 text-white">
+      <section className="py-16" style={{ backgroundColor: '#2a7650' }}>
         <div className="container-custom">
           <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-serif mb-6">
+            <h2 className="text-3xl md:text-4xl font-serif mb-6 font-bold" style={{ color: '#ffffff' }}>
               A Different Kind of Therapy
             </h2>
-            <p className="text-xl text-primary-100 leading-relaxed">
+            <p className="text-xl leading-relaxed font-medium" style={{ color: '#ffffff' }}>
               Rather than traditional talk therapy, I integrate mindfulness and experiential 
               approaches to help you explore, process, and heal in ways that engage both mind and body.
             </p>

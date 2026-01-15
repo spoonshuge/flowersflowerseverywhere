@@ -132,18 +132,18 @@ const Contact = ({ content }) => {
       )}
 
       {/* CTA */}
-      <section className="py-16 bg-primary-700 text-white">
+      <section className="py-16" style={{ backgroundColor: '#2a7650' }}>
         <div className="container-custom text-center">
-          <h2 className="text-3xl font-serif mb-6">
+          <h2 className="text-3xl font-serif mb-6 font-bold" style={{ color: '#ffffff' }}>
             Ready to Take the First Step?
           </h2>
-          <p className="text-xl text-primary-100 mb-8 max-w-2xl mx-auto">
+          <p className="text-xl mb-8 max-w-2xl mx-auto font-medium" style={{ color: '#ffffff' }}>
             Reach out today to schedule your free consultation.
           </p>
           {contact?.phone && (
             <a
               href={`tel:${contact.phone}`}
-              className="bg-white text-primary-700 hover:bg-neutral-100 font-medium px-8 py-4 rounded-lg inline-block transition-colors duration-200 shadow-lg hover:shadow-xl"
+              className="bg-white text-primary-800 hover:bg-primary-50 hover:text-primary-900 font-semibold px-8 py-4 rounded-lg inline-block transition-colors duration-200 shadow-lg hover:shadow-xl"
             >
               Call {contact.phone}
             </a>
